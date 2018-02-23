@@ -14,7 +14,7 @@ import Text.Parsec (many1, anyChar, digit, letter, skipMany1, parse)
 
 import Types
 
-source = "angraal"
+source = ""
 site = "http://www." ++ source ++ ".com"
 
 reviews = "/f64-forum"
