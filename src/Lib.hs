@@ -1,4 +1,5 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Lib where
@@ -8,32 +9,57 @@ import Data.Maybe
 import Control.Applicative
 
 import Text.HTML.Scalpel
-
 import Text.StringLike
+import Text.Parsec (many1, anyChar, digit, letter, skipMany1, parse)
 
-source = ""
+import Types
 
-reviewsUrl = "http://www." ++ source ++ ".com/f64-forum"
+source = "angraal"
+site = "http://www." ++ source ++ ".com"
+
+reviews = "/f64-forum"
+masters = "/f48-forum"
+
+mastersUrl = site ++ masters
+reviewsUrl = site ++ reviews
+
 reviewsScrape = scrapeURL reviewsUrl
+mastersScrape = scrapeURL mastersUrl
 testScrape = scrapeStringLike test
---
---review :: IO (Maybe [String])
---review = do
---    let clean1 = "div" @: ["id" @= "emptyidcc"]
---    let clean2 = "tbody"
---    let cleanSelectors = [html clean1, innerHTML clean2, html clean2]
---    --r <- (!! i) <$> traverse reviewsScrape cleanSelectors
---    let r = testScrape (sequence cleanSelectors)
---    let r0 = map testScrape cleanSelectors
---    return (r, r0)
-    
---c 2 f p a1 a2 = ((.) .) (f . p) a1 p a2
-test = "<div id=\"emptyidcc\"> <tbody><p>1</p> <tbody><p>2</p></tbody> </tbody></div> <tbody><p>3</p></tbody>"
 
-review' :: Scraper String [String]
-review' = do
-    let clean1 = "div" @: ["id" @= "emptyidcc"]
-    let clean2 = "tbody"
-    --html clean1
-    htmls clean2
-    --innerHTML clean2
+t0 = "f48p450-forum"
+t1 = "f48-forum"
+
+readPage :: String -> Page
+readPage str = case parse p "" str of
+    Right page    -> page
+    Left errorMsg -> error . show $ errorMsg
+    where
+        p = makePage <$> nextInt <*> (nextInt <|> pure "0")
+        nextInt = skipMany1 letter *> many1 digit
+
+nextPage (Page theme offset) = Page theme (50 + offset)
+--themes url pages =
+
+test = "<div id=\"emptyidcc\"> <tbody><p>1</p> <tbody><p>2</p></tbody> </tbody></div> <tbody><p>3</p></tbody>"
+--
+--clean1 = "div" @: ["id" @= "emptyidcc"]
+--clean2 = "tbody"
+--
+--msgs' :: Scraper String [String]
+--msgs' = do
+--    let div = "div" @: ["id" @= "emptyidcc"]
+--    let clean = "table" @: [hasClass "forumline"]
+--    let title = "a" @: [hasClass "topictitle"]
+--    innerHTML (clean1 // "tbody" // "tr")
+--    chroot div $ text clean
+--    texts title
+--
+--s = do
+--    mastersScrape msgs'
+--
+--ps = s >>= (putStrLn . concatMap ('\n' :) . fromJust)
+--
+--r :: Scraper String String
+----r = (,) <$> innerHTML clean2 <*> innerHTML clean2 
+--r = innerHTML (clean2 // clean2)
