@@ -1,4 +1,8 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 module Util where
 
-(<$$>) = fmap . fmap
+infixl 4 <$$>
+(<$$>)  = fmap . fmap
+
+infixl 4 <$$$> 
+(<$$$>) = fmap . fmap . fmap
